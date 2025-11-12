@@ -19,7 +19,7 @@ app.get("/", (req, res)=>{
     res.send("Hi, I am root");
 });
 
-//route for smaplelisting where we only added our document into the collection
+//route for samplelisting where we only added our document into the collection
 app.get("/testListing", async (req, res)=>{
     let sampleListing = new Listing({
         title: "My New Villa",
