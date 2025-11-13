@@ -19,7 +19,7 @@ async function main(){
 
 //function to delete the previous random data and initialize new data into database
 const initDB  = async () =>{
-    await Listing.deleteMany({}); //delete the previous random data what we created for sample tes
+    await Listing.deleteMany({}); //delete the previous random data what we created for sample test
     await Listing.insertMany(initData.data)  //initData is an object and data is key of our data.js //initData.data give us the array of data
     console.log("data was initialized");
 };
