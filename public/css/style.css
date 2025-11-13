@@ -1,6 +1,6 @@
-/* body {
-    background-color: azure;
-} */
+body {
+    font-family: "Plus Jakarta Sans", sans-serif !important;
+}
 
 /* Navbar */
 .navbar {
@@ -60,3 +60,48 @@
     justify-content: center;/* horizontal alignment */
     align-items: space-evenly;/* vertical alignment */
 }
+
+/* cards styling */
+
+.card {
+    border: none !important; /* importand is used to override the bootstrap styling */
+    margin-bottom: 2rem;
+}
+
+/* styling the image */
+.card-img-top {
+    border-radius: 1rem;
+    width: 100% !important;
+    object-fit: cover !important;
+    /* We use object-fit: cover; when we want all images to fill their box evenly, especially in cards, grids, or galleries — without stretching or leaving blank space. */
+}
+
+/* styling the content of image */
+.card-body {
+    padding: 0 !important;
+}
+
+.car-text p {
+    font-weight: 400 !important;
+}
+
+/* removing the underline of image content */
+.listing-link {
+    text-decoration: none;
+}
+
+/* hover effect on cards(or we can say overlay effect) */
+.card-img-overlay:hover {
+    opacity: 0.2; 
+    background-color: white;
+}
+
+
+
+
+
+
+
+
+
+
