@@ -4,11 +4,15 @@ const mongoose = require("mongoose");
 const Listing = require("./models/listing.js");
 const path = require("path");
 const methodOverride = require("method-override");
+const ejsMate = require("ejs-mate");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "/views"));
 app.use(express.urlencoded({extended:true}));//to parse all the data whichever we are getting from request
 app.use(methodOverride('_method')); // override with POST having ?_method=PUT
+app.engine("ejs", ejsMate);
+app.use(express.static(path.join(__dirname, "/public")));
+
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/travelDB";
 async function main() {
