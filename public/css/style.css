@@ -1,7 +1,15 @@
 body {
     font-family: "Plus Jakarta Sans", sans-serif !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
+/* boilerplate body container class */
+.container {
+    flex: 1;
+}
+ 
 /* Navbar */
 .navbar {
     height: 5rem;
@@ -96,12 +104,31 @@ body {
     background-color: white;
 }
 
+.add-btn {
+    background-color: #fe424d !important;
+    border: none !important;
+}
 
+/* edit page */
+.edit-btn {
+    background-color: #fe424d !important;
+    border: none !important;
+}
 
+/* show page*/
+.show-img {
+    height:30vh;
+}
 
+/* show page btns class */
+.btns {
+    display: flex;
+}
 
-
-
+.show-card {
+    padding-left: 0;
+    padding-right: 0;
+}
 
 
 
