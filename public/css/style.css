@@ -71,7 +71,7 @@ body {
 
 /* cards styling */
 
-.card {
+.listing-card {
     border: none !important; /* importand is used to override the bootstrap styling */
     margin-bottom: 2rem;
 }
