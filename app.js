@@ -127,8 +127,8 @@ app.delete("/listings/:id", wrapAsync(async (req, res)=>{
     res.redirect("/listings");
 }));
 
-//Reviews
-//post Route
+
+//post Review Route
 app.post("/listings/:id/reviews", validateReview, wrapAsync(async(req, res)=> {
     let listing = await Listing.findById(req.params.id);
     let newReview = new Review(req.body.review);
@@ -139,6 +139,14 @@ app.post("/listings/:id/reviews", validateReview, wrapAsync(async(req, res)=> {
     await listing.save();
 
     res.redirect(`/listings/${listing._id}`)
+}));
+
+//Delete Review Route
+app.delete("/listings/:id/reviews/:reviewId", wrapAsync(async (req, res)=> {
+    let { id, reviewId } = req.params;
+    await Listing.findByIdAndUpdate(id, {$pull: {reviews: reviewId}}); //pull means remove data from an array, remove the reviewsId whichever matched with reviews inside array
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/listings/${id}`);
 }));
 
 //404 Handler(catch any route that didn't match above)
