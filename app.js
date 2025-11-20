@@ -7,7 +7,8 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
-const { listingSchema } = require("./schema.js")
+const { listingSchema, reviewSchema } = require("./schema.js");
+const Review = require("./models/review.js");
 
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/travelDB";
@@ -66,6 +67,18 @@ const validateListing = (req, res, next) => {
     }
 }
 
+//function to validate review
+const validateReview = (req, res, next) => {
+    let { error } = reviewSchema.validate(req.body); //is req.body is satisfying the condition of listingSchema
+    if(error) {
+        let errMsg = error.details.map((el) => el.message).
+        join(","); //extract only the useful error messages(el.messages) separated by comma
+        throw new ExpressError(400, errMsg)
+    } else {
+        next(); //if no error continue to the next middleware when there is no error.
+    }
+}
+
 
 //Index route: to view all the listings
 app.get("/listings", wrapAsync(async (req, res)=>{
@@ -81,7 +94,7 @@ app.get("/listings/new",(req, res)=>{
 //Show route: to read the data or view the data 
 app.get("/listings/:id", wrapAsync(async (req, res) =>{
     let {id} = req.params;
-    const listing = await Listing.findById(id);
+    const listing = await Listing.findById(id).populate("reviews");
     res.render("listings/show.ejs",{ listing })
 }));
 
@@ -114,6 +127,20 @@ app.delete("/listings/:id", wrapAsync(async (req, res)=>{
     res.redirect("/listings");
 }));
 
+//Reviews
+//post Route
+app.post("/listings/:id/reviews", validateReview, wrapAsync(async(req, res)=> {
+    let listing = await Listing.findById(req.params.id);
+    let newReview = new Review(req.body.review);
+  
+    listing.reviews.push(newReview);
+
+    await newReview.save();
+    await listing.save();
+
+    res.redirect(`/listings/${listing._id}`)
+}));
+
 //404 Handler(catch any route that didn't match above)
 //if above path doesn't match then show page not found (means wrong path given)
 app.use((req, res, next) => {
@@ -124,9 +151,12 @@ app.use((req, res, next) => {
 app.use((err, req, res, next)=> {
     let { statusCode=500, message="something wen wrong" } = err;
     res.status(statusCode).render("error.ejs", { message });
-    
 });
 
 app.listen(8080, (req, res) => {
     console.log("server is listening to port 8080");
 });
+
+
+
+
