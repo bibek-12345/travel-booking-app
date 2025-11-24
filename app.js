@@ -6,6 +6,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
+const flash = require("connect-flash");
 
 const listings = require("./routes/listing.js");
 const reviews = require("./routes/review.js");
@@ -38,16 +39,27 @@ app.use(express.static(path.join(__dirname, "/public")));
 const sessionOptions = {
     secret: "mysupersecretstring", //signs cookie to prevent tempering.
     resave: false, //save only if session data changed
-    saveUninitialized: true //saves a new session even if it has no data in it yet.
+    saveUninitialized: true, //saves a new session even if it has no data in it yet.
+    cookie: {
+        expires: Date.now() + 7 * 24 * 60 * 60 * 1000, //delete the cookie after 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000, //keeps this cookie for 7days from whenever it was created
+        httpOnly: true //protect session id. security(helps protect against xss attacks)
+    }
 };
-
-//express session middleware
-app.use(session(sessionOptions));
-
-
 //root route
 app.get("/", (req, res)=>{
     res.send("Hi, I am root");
+});
+
+//express session 
+app.use(session(sessionOptions));
+app.use(flash());
+
+//midleware
+app.use((req, res, next)=> {
+    res.locals.successMsg = req.flash("success");
+    res.locals.errorMsg = req.flash("error");
+    next();
 });
 
 //express middleware mounting
