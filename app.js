@@ -5,6 +5,7 @@ const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
+const session = require("express-session");
 
 const listings = require("./routes/listing.js");
 const reviews = require("./routes/review.js");
@@ -32,6 +33,17 @@ app.use(methodOverride('_method')); // override with POST having ?_method=PUT
 
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
+
+//defining the session options
+const sessionOptions = {
+    secret: "mysupersecretstring", //signs cookie to prevent tempering.
+    resave: false, //save only if session data changed
+    saveUninitialized: true //saves a new session even if it has no data in it yet.
+};
+
+//express session middleware
+app.use(session(sessionOptions));
+
 
 //root route
 app.get("/", (req, res)=>{
