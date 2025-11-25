@@ -4,6 +4,7 @@ const Listing = require("../models/listing.js");
 const wrapAsync = require("../utils/wrapAsync.js");
 const ExpressError = require("../utils/ExpressError.js");
 const { listingSchema } = require("../schema.js"); //joi validation schema.js(server side validation)
+const { isLoggedIn } = require("../middleware.js");
 
 //function to validate listing 
 const validateListing = (req, res, next) => {
@@ -25,9 +26,9 @@ router.get("/", wrapAsync(async (req, res)=>{
 }));
 
 //New Route: this route gives the form to add the new listing
-router.get("/new",(req, res)=>{
+router.get("/new", isLoggedIn, (req, res)=>{
     res.render("listings/new.ejs");
-})
+});
 
 //Show route: to read the data or view the data 
 router.get("/:id", wrapAsync(async (req, res) =>{
@@ -41,7 +42,7 @@ router.get("/:id", wrapAsync(async (req, res) =>{
 }));
 
 //Create Route or post route: 
-router.post("/", validateListing, wrapAsync(async (req, res, next)=>{
+router.post("/", isLoggedIn, validateListing, wrapAsync(async (req, res, next)=>{
     let newListing = new Listing(req.body.listing);
     await newListing.save();
     req.flash("success", "New Listing Created!");
@@ -49,7 +50,7 @@ router.post("/", validateListing, wrapAsync(async (req, res, next)=>{
 }));
 
 //Edit Route: it is used to give form to edit in response
-router.get("/:id/edit", wrapAsync(async (req, res)=>{
+router.get("/:id/edit", isLoggedIn, wrapAsync(async (req, res)=>{
     let {id} = req.params;
     const listing = await Listing.findById(id);
     if(!listing) {
@@ -60,7 +61,7 @@ router.get("/:id/edit", wrapAsync(async (req, res)=>{
 }));
 
 //Update Route: this takes the data which was submitted through form and update in database
-router.put("/:id", validateListing, wrapAsync(async (req, res)=>{
+router.put("/:id", isLoggedIn, validateListing, wrapAsync(async (req, res)=>{
     let { id } = req.params;
     await Listing.findByIdAndUpdate(id, { ...req.body.listing });
     req.flash("success", "Listing Updated!");
@@ -68,7 +69,7 @@ router.put("/:id", validateListing, wrapAsync(async (req, res)=>{
 }));
 
 //Delete Route: this will delete the individual listing
-router.delete("/:id", wrapAsync(async (req, res)=>{
+router.delete("/:id", isLoggedIn, wrapAsync(async (req, res)=>{
     let { id } = req.params;
     let deletedListing = await Listing.findByIdAndDelete(id);
     console.log(deletedListing);

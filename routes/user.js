@@ -25,15 +25,27 @@ router.post("/signup", wrapAsync(async (req, res)=> {
 
 }));
 
-//route: just to render the login form
+//login route: just to render the login form
 router.get("/login", (req, res) => {
     res.render("users/login.ejs");
 });
 
-//route that takes post request and check the form filled data from the database
+//login route that takes post request and check the form filled data from the database
 router.post("/login", passport.authenticate("local", { failureRedirect: "/login", failureFlash: true }), async (req, res) => {
     req.flash("success", "welcome back to travel booking!")
+
     res.redirect("/listings");
+});
+
+//logout route
+router.get("/logout", (req, res) => {
+    req.logout((err) => {
+        if(err) {
+            return next(err);
+        }
+        req.flash("success", "logged you out!");
+        res.redirect("/listings");
+    });
 });
 
 module.exports = router;
