@@ -7,9 +7,15 @@ const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
 const flash = require("connect-flash");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+const User = require("./models/user.js");
 
-const listings = require("./routes/listing.js");
-const reviews = require("./routes/review.js");
+//require router 
+const listingRouter = require("./routes/listing.js");
+const reviewRouter = require("./routes/review.js");
+const userRouter = require("./routes/user.js");
+
 
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/travelDB";
@@ -55,6 +61,13 @@ app.get("/", (req, res)=>{
 app.use(session(sessionOptions));
 app.use(flash());
 
+app.use(passport.initialize()); //middleware that initialize the passport
+app.use(passport.session()); //connects passport with session middleware.(To identify users as they browse from page to page.)
+passport.use(new LocalStrategy(User.authenticate())); //User.authenticate is a ready-made function that checks username/email and password
+
+passport.serializeUser(User.serializeUser());//storing user data in session(if user login then we need to serialize the user) 
+passport.deserializeUser(User.deserializeUser()); //removing user data from session(if user finish it's session then we need to deserialize the user)
+
 //midleware
 app.use((req, res, next)=> {
     res.locals.successMsg = req.flash("success");
@@ -62,11 +75,22 @@ app.use((req, res, next)=> {
     next();
 });
 
+//this is just demo route
+//route: here we create new user and store into database
+// app.get("/demoUser", async (req, res)=> {
+//     let fakeUser = new User({
+//         email: "student@gmail.com",
+//         username: "delta-student"
+//     });
+//     let registeredUser = await User.register(fakeUser, "password"); //passport local mongoose handles hashing
+//     res.send(registeredUser);
+// });
+
 //express middleware mounting
 //this below code tells express that for any route that starts with /listings, user the router called listings which is required above from router/listing.js
-app.use("/listings", listings);
-app.use("/listings/:id/reviews", reviews);
-
+app.use("/listings", listingRouter);
+app.use("/listings/:id/reviews", reviewRouter);
+app.use("/", userRouter);
 
 //404 Handler(catch any route that didn't match above)
 //if above path doesn't match then show page not found (means wrong path given)
