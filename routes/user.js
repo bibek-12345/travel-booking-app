@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/user.js");
 const wrapAsync = require("../utils/wrapAsync");
 const passport = require("passport");
+const { saveRedirectUrl } = require("../middleware.js");
 
 //route: just to render the signup form
 router.get("/signup", (req, res)=> {
@@ -16,8 +17,13 @@ router.post("/signup", wrapAsync(async (req, res)=> {
         const newUser = new User({email, username });
         const registeredUser = await User.register(newUser, password);
         console.log(registeredUser);
-        req.flash("success", "welcome to travel booking");
-        res.redirect("/listings");
+        req.login(registeredUser, (err) => {
+            if(err) {
+                return next(err);
+            }
+            req.flash("success", "welcome to travel booking");
+            res.redirect("/listings");
+        });
     } catch(err) {
         req.flash("error", err.message);
         res.redirect("/signup");
@@ -31,10 +37,10 @@ router.get("/login", (req, res) => {
 });
 
 //login route that takes post request and check the form filled data from the database
-router.post("/login", passport.authenticate("local", { failureRedirect: "/login", failureFlash: true }), async (req, res) => {
+router.post("/login", saveRedirectUrl, passport.authenticate("local", { failureRedirect: "/login", failureFlash: true }), async (req, res) => {
     req.flash("success", "welcome back to travel booking!")
-
-    res.redirect("/listings");
+    let redirectUrl = res.locals.redirectUrl || "/listings";
+    res.redirect(redirectUrl)
 });
 
 //logout route

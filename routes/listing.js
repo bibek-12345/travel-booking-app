@@ -2,22 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Listing = require("../models/listing.js");
 const wrapAsync = require("../utils/wrapAsync.js");
-const ExpressError = require("../utils/ExpressError.js");
-const { listingSchema } = require("../schema.js"); //joi validation schema.js(server side validation)
-const { isLoggedIn } = require("../middleware.js");
+const { isLoggedIn, isOwner, validateListing } = require("../middleware.js");
 
-//function to validate listing 
-const validateListing = (req, res, next) => {
-    //validation for whole listing and also individual listing using joi
-    let { error } = listingSchema.validate(req.body); //is req.body is satisfying the condition of listingSchema
-    if(error) {
-        let errMsg = error.details.map((el) => el.message).
-        join(","); //extract only the useful error messages(el.messages) separated by comma
-        throw new ExpressError(400, errMsg)
-    } else {
-        next(); //if no error continue to the next middleware when there is no error.
-    }
-}
 
 //Index route: to view all the listings
 router.get("/", wrapAsync(async (req, res)=>{
@@ -33,7 +19,14 @@ router.get("/new", isLoggedIn, (req, res)=>{
 //Show route: to read the data or view the data 
 router.get("/:id", wrapAsync(async (req, res) =>{
     let {id} = req.params;
-    const listing = await Listing.findById(id).populate("reviews");
+    const listing = await Listing.findById(id)
+                            .populate({
+                                path: "reviews",
+                                populate: {
+                                    path: "author",
+                                }
+                            })
+                            .populate("owner");
     if(!listing) {
         req.flash("error", "Listing you requested for does not exist!");
         return res.redirect("/listings");
@@ -44,13 +37,15 @@ router.get("/:id", wrapAsync(async (req, res) =>{
 //Create Route or post route: 
 router.post("/", isLoggedIn, validateListing, wrapAsync(async (req, res, next)=>{
     let newListing = new Listing(req.body.listing);
+    newListing.owner = req.user._id; //store owner username
     await newListing.save();
     req.flash("success", "New Listing Created!");
     res.redirect("/listings");
 }));
 
+
 //Edit Route: it is used to give form to edit in response
-router.get("/:id/edit", isLoggedIn, wrapAsync(async (req, res)=>{
+router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(async (req, res)=>{
     let {id} = req.params;
     const listing = await Listing.findById(id);
     if(!listing) {
@@ -61,15 +56,15 @@ router.get("/:id/edit", isLoggedIn, wrapAsync(async (req, res)=>{
 }));
 
 //Update Route: this takes the data which was submitted through form and update in database
-router.put("/:id", isLoggedIn, validateListing, wrapAsync(async (req, res)=>{
+router.put("/:id", isLoggedIn, isOwner, validateListing, wrapAsync(async (req, res)=>{
     let { id } = req.params;
-    await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+    await Listing.findByIdAndUpdate(id, { ...req.body.listing }); //finds the listing with the given id and updates its all fields with the values from req.body.listing
     req.flash("success", "Listing Updated!");
     res.redirect(`/listings/${id}`);
 }));
 
 //Delete Route: this will delete the individual listing
-router.delete("/:id", isLoggedIn, wrapAsync(async (req, res)=>{
+router.delete("/:id", isLoggedIn, isOwner, wrapAsync(async (req, res)=>{
     let { id } = req.params;
     let deletedListing = await Listing.findByIdAndDelete(id);
     console.log(deletedListing);

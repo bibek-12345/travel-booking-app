@@ -68,10 +68,11 @@ passport.use(new LocalStrategy(User.authenticate())); //User.authenticate is a r
 passport.serializeUser(User.serializeUser());//storing user data in session(if user login then we need to serialize the user) 
 passport.deserializeUser(User.deserializeUser()); //removing user data from session(if user finish it's session then we need to deserialize the user)
 
-//midleware
+//midleware: variable which are used in ejs template to access data
 app.use((req, res, next)=> {
     res.locals.successMsg = req.flash("success");
     res.locals.errorMsg = req.flash("error");
+    res.locals.currUser = req.user;
     next();
 });
 
