@@ -5,11 +5,11 @@ const { isLoggedIn, isOwner, validateListing } = require("../middleware.js");
 const listingController = require("../controllers/listings.js");
 const multer  = require('multer');
 const { storage } = require("../cloudConfig.js");
-const upload = multer({ storage })
+const upload = multer({ storage });
 
 router.route("/")
     .get(wrapAsync(listingController.index)) //Index route: to view all the listings
-    .post(isLoggedIn, validateListing, upload.single("listing[image]"), wrapAsync(listingController.createListing)), //Create Route or post route: 
+    .post(isLoggedIn, upload.single("listing[image]"), validateListing, wrapAsync(listingController.createListing)), //Create Route or post route: 
 
 
 //New Route: this route gives the form to add the new listing
@@ -17,7 +17,7 @@ router.get("/new", isLoggedIn, listingController.renderNewForm);
 
 router.route("/:id")
     .get(wrapAsync(listingController.showListing)) //Show route: to read the data or view the data 
-    .put(isLoggedIn, isOwner, validateListing, wrapAsync(listingController.updateListing)) //Update Route: this takes the data which was submitted through form and update in database
+    .put(isLoggedIn, isOwner, upload.single("listing[image]"), validateListing, wrapAsync(listingController.updateListing)) //Update Route: this takes the data which was submitted through form and update in database
     .delete(isLoggedIn, isOwner, wrapAsync(listingController.destroyListing)); //Delete Route: this will delete/destroy the individual listing
 
 

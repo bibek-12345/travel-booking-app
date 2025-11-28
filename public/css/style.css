@@ -131,4 +131,9 @@ body {
 }
 
 
-
+/* edit page image preview */
+.preview-img {
+    width: 15rem;       
+    border-radius: 1rem; 
+    object-fit: cover;
+}
