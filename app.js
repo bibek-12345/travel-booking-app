@@ -56,10 +56,11 @@ const sessionOptions = {
         httpOnly: true //protect session id. security(helps protect against xss attacks)
     }
 };
-//root route
-app.get("/", (req, res)=>{
-    res.send("Hi, I am root");
-});
+
+// //root route
+// app.get("/", (req, res)=>{
+//     res.send("Hi, I am root");
+// });
 
 //express session 
 app.use(session(sessionOptions));
