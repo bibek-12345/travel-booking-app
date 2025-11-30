@@ -137,3 +137,9 @@ body {
     border-radius: 1rem; 
     object-fit: cover;
 }
+
+/* Map styling  */
+#map {
+    height: 400px;
+    width: 80vh;
+}
