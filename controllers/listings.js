@@ -72,13 +72,24 @@ module.exports.updateListing = async (req, res)=>{
     let { id } = req.params;
     let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }); //finds the listing with the given id and updates its all fields with the values from req.body.listing
    
-    //if typeof req.file is not undefined then only save the image 
-    if(typeof req.file != "undefined") {
+    // If location is updated then Recalculate geometry
+    if (req.body.listing.location) {
+        let response = await geocodingClient.forwardGeocode({
+            query: req.body.listing.location,
+            limit: 1,
+        }).send();
+
+        listing.geometry = response.body.features[0].geometry;
+    }
+
+    //update image if new file uploaded 
+    if(req.file) {
         let url = req.file.path;
         let filename = req.file.filename;
         listing.image = { url, filename }; //update url and filname in image of listing
-        await listing.save(); //save listing
     }
+    
+    await listing.save(); //save listing
 
     req.flash("success", "Listing Updated!");
     res.redirect(`/listings/${id}`);
