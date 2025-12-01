@@ -10,6 +10,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
+const MongoStore = require('connect-mongo').default;
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
@@ -21,8 +22,8 @@ const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
 
-
-const MONGO_URL = "mongodb://127.0.0.1:27017/travelDB";
+//mongo atlas url
+const dbUrl = process.env.ATLASDB_URL;
 
 main()
     .then(()=>{
@@ -33,7 +34,7 @@ main()
     })
 
 async function main() {
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(dbUrl);
 }
 
 
@@ -45,9 +46,23 @@ app.use(methodOverride('_method')); // override with POST having ?_method=PUT
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
-//defining the session options
+//defines where sessionn data is stored(while using mongoAtlas)
+const store = MongoStore.create({
+    mongoUrl: dbUrl, //connection url for mongodb atlas database
+    crypto: {
+        secret: process.env.SECRET, //signs cookie to prevent tempering
+    },
+    touchAfter: 24 * 3600, //upadate the session in the database only onece per 24 hours, even if the user keeps interacting, for efficiency. it means logged in user for 24 hr
+});
+
+store.on("error", (err) => {
+    console.log("ERROR in MONGO SESSION STORE", err);
+}); 
+
+//defining the session options(while using mongodb)
 const sessionOptions = {
-    secret: "mysupersecretstring", //signs cookie to prevent tempering.
+    store, // store above session data
+    secret: process.env.SECRET, //signs cookie to prevent tempering.
     resave: false, //save only if session data changed
     saveUninitialized: true, //saves a new session even if it has no data in it yet.
     cookie: {
@@ -61,6 +76,7 @@ const sessionOptions = {
 // app.get("/", (req, res)=>{
 //     res.send("Hi, I am root");
 // });
+
 
 //express session 
 app.use(session(sessionOptions));
