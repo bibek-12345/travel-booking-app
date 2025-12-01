@@ -22,8 +22,15 @@ const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
 
-//mongo atlas url
-const dbUrl = process.env.ATLASDB_URL;
+
+// Use Render ENV in production, localhost in dev
+let dbUrl;
+
+if (process.env.NODE_ENV === "production") {
+    dbUrl = process.env.ATLASDB_URL; // Render / Production
+} else {
+    dbUrl = "mongodb://127.0.0.1:27017/travelDB"; // Local Dev
+}
 
 main()
     .then(()=>{

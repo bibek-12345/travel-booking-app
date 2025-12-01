@@ -2,14 +2,15 @@ const mongoose = require("mongoose");
 const initData = require("./data.js"); //initData is an object
 const Listing = require("../models/listing.js");
 
-// Use Render ENV in production, localhost in dev
-const MONGO_URL = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/travelDB";
 
 // Disable in production
 if (process.env.NODE_ENV === "production") {
     console.log("Seed script blocked in production.");
     process.exit();
 }
+
+// connect to local mongodb
+const MONGO_URL = "mongodb://127.0.0.1:27017/travelDB";
 
 //connect to MongoDB
 const main = async () => {
